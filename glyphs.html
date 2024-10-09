@@ -1,0 +1,503 @@
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Gentium, "Gentium Plus", GentiumAlt, "DejaVu Sans",
+          "Segoe UI", "Lucida Grande", "Charis SIL", "Doulos SIL",
+          "TITUS Cyberbit Basic", "Code2000", "Lucida Sans Unicode", sans-serif;
+        transition: font-size 250ms;
+        font-weight: bold;
+        --stroke-strong: black;
+        --stroke-medium: gray;
+        --stroke-weak: lightGray;
+        --stroke-off: none;
+      }
+      body > section {
+        padding-top: 1em;
+        padding-bottom: 1em;
+      }
+      section > section {
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
+      }
+      section:nth-of-type(n + 2) {
+        border-top-width: 1px;
+        border-top-style: solid;
+      }
+      body > section:nth-of-type(n + 2) {
+        border-top-color: gray;
+      }
+      section > section:nth-of-type(n + 2) {
+        border-top-color: lightGray;
+      }
+      hr {
+        border: 1px solid black;
+        margin-top: 3em;
+        margin-bottom: 3em;
+      }
+      .word {
+        display: inline-block;
+        line-height: 1;
+      }
+      .word label {
+        display: inline-block;
+        position: relative;
+      }
+      .word input {
+        display: inline-block;
+        height: 1.5em;
+        left: 0;
+        position: absolute;
+        right: 0;
+        text-align: center;
+      }
+      .phrase {
+        line-height: 4;
+        padding-bottom: 1em;
+      }
+      .phrase:nth-child(2n + 1) {
+        background-color: rgba(0, 0, 255, 0.03);
+      }
+      .phrase svg-glyph {
+        padding: 0;
+      }
+      .phrase svg-glyph::part(phoneme) {
+        display: none;
+      }
+      .phrase svg-glyph::part(code) {
+        opacity: 0;
+        overflow: visible;
+        top: -2.5em;
+      }
+      .phrase svg-glyph:hover::part(code) {
+        opacity: 1;
+        transform: scale(2);
+      }
+      .phrase .word {
+        font-size: 50%;
+        margin-left: 0.5em;
+        margin-right: 0.5em;
+        padding-bottom: 2em;
+        position: relative;
+      }
+      .phrase .word label:only-child {
+        font-size: 200%;
+      }
+      .phrase .word svg-glyph + label {
+        bottom: 0;
+        font-size: 150%;
+        left: 0;
+        position: absolute;
+        right: 0;
+        text-align: center;
+      }
+      .phrase .unknown svg-glyph::part(phoneme) {
+        bottom: -2em;
+        display: inline-block;
+      }
+
+      /*************************    combos, parts    **************************/
+      .combos svg-glyph,
+      .parts svg-glyph {
+        margin: 0.75em 0.25em;
+      }
+
+      /*****************************    words    ******************************/
+      .words .word {
+        margin: 1em;
+      }
+      .words .word label {
+        margin-left: 0.5em;
+      }
+
+      /*****************************    pages    ******************************/
+      .pages h2 {
+        text-align: right;
+        margin-bottom: 0;
+      }
+      .pages article:nth-of-type(n + 2) {
+        border-top: 3px dotted gray;
+        margin-top: 2em;
+      }
+
+      /*****************************    slate    ******************************/
+      .slate .phrase {
+        font-size: 200%;
+        line-height: 6;
+      }
+      .slate .word:last-child {
+        font-size: 150%;
+      }
+      .slate .word:last-child svg-glyph:nth-of-type(n + 2) {
+        margin-left: -0.6em;
+      }
+      .slate svg-glyph[form] {
+        --stroke-strong: black;
+        --stroke-medium: #444444;
+        --stroke-weak: gray;
+        --stroke-off: lightGray;
+      }
+      .slate svg-glyph::part(code) {
+        display: none;
+      }
+      .slate svg-glyph:not([form])::after {
+        bottom: 0;
+        content: "❌";
+        display: flex;
+        font-size: 75%;
+        left: 0;
+        opacity: 0;
+        padding: 0.25em;
+        pointer-events: none;
+        position: absolute;
+        right: 0;
+        top: 0;
+        transition: transform 250ms;
+      }
+      .slate svg-glyph:not([form]):hover::after {
+        opacity: 1;
+      }
+      .slate button {
+        font-size: 1.5rem;
+        margin: 0.25em;
+        padding: 0.5em 1em;
+      }
+      .slate textarea {
+        display: inline-block;
+        height: 6em;
+        margin: 0.5em 0.25em;
+        width: calc(100% - 0.5em);
+      }
+    </style>
+  </head>
+  <body>
+    <template id="glyph">
+      <style>
+        :host {
+          --stroke: var(--stroke-medium, gray);
+          --stroke-あ: var(--stroke-off, none);
+          --stroke-い: var(--stroke-off, none);
+          --stroke-う: var(--stroke-off, none);
+          --stroke-え: var(--stroke-off, none);
+          --stroke-お: var(--stroke-off, none);
+          --stroke-ア上: var(--stroke-off, none);
+          --stroke-ア下: var(--stroke-off, none);
+          --stroke-イ: var(--stroke-off, none);
+          --stroke-ウ: var(--stroke-off, none);
+          --stroke-エ: var(--stroke-off, none);
+          --stroke-オ: var(--stroke-off, none);
+          --stroke-カ: var(--stroke-off, none);
+          --stroke-ん: var(--stroke-off, none);
+          align-self: baseline;
+          display: inline-block;
+          padding-bottom: 0.5em;
+          padding-top: 1em;
+          position: relative;
+          vertical-align: -3em;
+          width: 3em;
+        }
+        :host(:nth-of-type(n + 2)) {
+          margin-left: -0.925em;
+        }
+        circle,
+        line {
+          fill: none;
+          stroke-linecap: round;
+          mix-blend-mode: darken;
+        }
+        rect {
+          fill: transparent;
+        }
+        .base {
+          stroke: var(--stroke);
+        }
+        [part="code"],
+        [part="phoneme"] {
+          display: inline-block;
+          font-size: 50%;
+          height: 1em;
+          left: 0;
+          line-height: 1.2;
+          margin: 0;
+          padding-left: 0.5em;
+          padding-right: 0.5em;
+          position: absolute;
+          right: 0;
+          text-align: center;
+          text-shadow: white -1px -1px, white 1px -1px, white 1px 1px,
+            white -1px 1px;
+        }
+        [part="code"] {
+          top: 0;
+        }
+        [part="phoneme"] {
+          bottom: 0;
+          white-space: break-spaces;
+        }
+        #root.あ {
+          --stroke-あ: var(--stroke);
+        }
+        #root.い {
+          --stroke-い: var(--stroke);
+        }
+        #root.う {
+          --stroke-う: var(--stroke);
+        }
+        #root.え {
+          --stroke-え: var(--stroke);
+        }
+        #root.お {
+          --stroke-お: var(--stroke);
+        }
+        #root.ア {
+          --stroke-ア上: var(--stroke);
+          --stroke-ア下: var(--stroke);
+        }
+        #root.イ {
+          --stroke-イ: var(--stroke);
+        }
+        #root.ウ {
+          --stroke-ウ: var(--stroke);
+        }
+        #root.エ {
+          --stroke-エ: var(--stroke);
+        }
+        #root.オ {
+          --stroke-オ: var(--stroke);
+        }
+        #root.カ {
+          --stroke-カ: var(--stroke);
+        }
+        #root.ん {
+          --stroke-ん: var(--stroke);
+        }
+        #root.イ.ウ,
+        #root.イ.エ {
+          --stroke-ア下: var(--stroke);
+        }
+        line.あ {
+          stroke: var(--stroke-あ);
+        }
+        line.い {
+          stroke: var(--stroke-い);
+        }
+        line.う {
+          stroke: var(--stroke-う);
+        }
+        line.え {
+          stroke: var(--stroke-え);
+        }
+        line.お {
+          stroke: var(--stroke-お);
+        }
+        line.ア.上 {
+          stroke: var(--stroke-ア上);
+        }
+        line.ア.下 {
+          stroke: var(--stroke-ア下);
+        }
+        line.イ {
+          stroke: var(--stroke-イ);
+        }
+        line.ウ {
+          stroke: var(--stroke-ウ);
+        }
+        line.エ {
+          stroke: var(--stroke-エ);
+        }
+        line.オ {
+          stroke: var(--stroke-オ);
+        }
+        line.カ {
+          stroke: var(--stroke-カ);
+        }
+        circle.ん {
+          stroke: var(--stroke-ん);
+        }
+      </style>
+      <p part="code"><span part="outer"></span>, <span part="inner"></span></p>
+      <svg
+        id="root"
+        part="svg"
+        version="1.1"
+        viewBox="-5 -9 10 20"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <line id="base" class="base" x1="-4" x2="4" y1="0" y2="0"></line>
+          <line
+            id="あ頭"
+            class="あ 外 左 頭 下"
+            x1="-4"
+            x2="-4"
+            y1="0"
+            y2="-4.5"
+          ></line>
+          <line
+            id="あ足"
+            class="あ 外 左 足 上"
+            x1="-4"
+            x2="-4"
+            y1="2"
+            y2="4.5"
+          ></line>
+          <line
+            id="い"
+            class="い 外 左 頭 上"
+            x1="-4"
+            x2="0"
+            y1="-4.5"
+            y2="-7"
+          ></line>
+          <line
+            id="う"
+            class="う 外 右 頭 上"
+            x1="0"
+            x2="4"
+            y1="-7"
+            y2="-4.5"
+          ></line>
+          <line
+            id="え"
+            class="え 外 左 足 下"
+            x1="-4"
+            x2="0"
+            y1="4.5"
+            y2="7"
+          ></line>
+          <line
+            id="お"
+            class="お 外 右 足 下"
+            x1="0"
+            x2="4"
+            y1="7"
+            y2="4.5"
+          ></line>
+          <line
+            id="ア上"
+            class="ア 内 中 頭 上"
+            x1="0"
+            x2="0"
+            y1="-2"
+            y2="-7"
+          ></line>
+          <line
+            id="ア下"
+            class="ア 内 中 頭 下"
+            x1="0"
+            x2="0"
+            y1="0"
+            y2="-2"
+          ></line>
+          <line
+            id="イ"
+            class="イ 内 中 足 両"
+            x1="0"
+            x2="0"
+            y1="2"
+            y2="7"
+          ></line>
+          <line
+            id="ウ"
+            class="ウ 内 左 頭 下"
+            x1="0"
+            x2="-4"
+            y1="-2"
+            y2="-4.5"
+          ></line>
+          <line
+            id="エ"
+            class="エ 内 右 頭 下"
+            x1="0"
+            x2="4"
+            y1="-2"
+            y2="-4.5"
+          ></line>
+          <line
+            id="オ"
+            class="オ 内 左 足 上"
+            x1="0"
+            x2="-4"
+            y1="2"
+            y2="4.5"
+          ></line>
+          <line
+            id="カ"
+            class="カ 内 右 足 上"
+            x1="0"
+            x2="4"
+            y1="2"
+            y2="4.5"
+          ></line>
+          <circle id="ん" class="ん 外 中 足 下" cx="0" cy="8" r="1"></circle>
+          <g id="あ">
+            <use href="#あ頭" />
+            <use href="#あ足" />
+          </g>
+          <g id="ア">
+            <use href="#ア下" />
+            <use href="#ア上" />
+          </g>
+        </defs>
+        <rect width="10" height="21" x="-5" y="-10" />
+        <use href="#base" />
+        <use href="#あ" part="stroke" />
+        <use href="#い" part="stroke" />
+        <use href="#う" part="stroke" />
+        <use href="#え" part="stroke" />
+        <use href="#お" part="stroke" />
+        <use href="#ア" part="stroke" />
+        <use href="#ア" part="stroke" />
+        <use href="#イ" part="stroke" />
+        <use href="#ウ" part="stroke" />
+        <use href="#エ" part="stroke" />
+        <use href="#オ" part="stroke" />
+        <use href="#カ" part="stroke" />
+        <use href="#ん" part="stroke" />
+      </svg>
+      <p part="phoneme"></p>
+    </template>
+
+    <section class="slate" tabindex="-1">
+      <h1>slate</h1>
+      <div class="phrase">
+        <div class="word unknown" form>
+          <svg-glyph id="ui" inner="0" outer="0" form></svg-glyph>
+        </div>
+      </div>
+      <button id="print" disabled>print glyph (SPACE)</button>
+      <button id="space" disabled>commit word (ENTER)</button>
+      <textarea id="output" readonly></textarea>
+    </section>
+    <section class="pages"></section>
+    <hr />
+    <details>
+      <summary>parts</summary>
+      <section class="parts">
+        <h1>parts</h1>
+        <section class="inner"></section>
+        <section class="outer"></section>
+      </section>
+    </details>
+    <hr />
+    <details>
+      <summary>phrases</summary>
+      <section class="phrases"></section>
+    </details>
+    <hr />
+    <details>
+      <summary>all glyphs</summary>
+      <section class="combos"></section>
+    </details>
+    <hr />
+    <details>
+      <summary>word bank</summary>
+      <section class="words"></section>
+    </details>
+    <script src="./data.js"></script>
+    <script src="./words.js"></script>
+    <script src="./pages.js"></script>
+    <script src="./glyphs.js"></script>
+  </body>
+</html>
